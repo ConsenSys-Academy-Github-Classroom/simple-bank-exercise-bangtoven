@@ -29,14 +29,14 @@ contract SimpleBank {
      */
     
     // Add an argument for this event, an accountAddress
-    event LogEnrolled();
+    event LogEnrolled(address accountAddress);
 
     // Add 2 arguments for this event, an accountAddress and an amount
     event LogDepositMade(address accountAddress, uint amount);
 
     // Create an event called LogWithdrawal
     // Hint: it should take 3 arguments: an accountAddress, withdrawAmount and a newBalance 
-    event LogWithdrawal();
+    event LogWithdrawal(address accountAddress, uint withdrawAmount, uint newBalance);
 
     /* Functions
      */
@@ -62,6 +62,7 @@ contract SimpleBank {
     function enroll() public returns (bool){
       require(enrolled[msg.sender] != true);
       enrolled[msg.sender] = true;
+      emit LogEnrolled(msg.sender);
       return true;
     }
 
@@ -79,16 +80,11 @@ contract SimpleBank {
     /// @param withdrawAmount amount you want to withdraw
     /// @return The balance remaining for the user
     function withdraw(uint withdrawAmount) public returns (uint) {
-      // If the sender's balance is at least the amount they want to withdraw,
-      // Subtract the amount from the sender's balance, and try to send that amount of ether
-      // to the user attempting to withdraw. 
-      // return the user's balance.
+      require(balances[msg.sender] >= withdrawAmount);
 
-      // 1. Use a require expression to guard/ensure sender has enough funds
+      balances[msg.sender] -= withdrawAmount;
+      msg.sender.call.value(withdrawAmount)("");
 
-      // 2. Transfer Eth to the sender and decrement the withdrawal amount from
-      //    sender's balance
-
-      // 3. Emit the appropriate event for this message
+      emit LogWithdrawal(msg.sender, withdrawAmount, balances[msg.sender]);
     }
 }
